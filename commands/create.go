@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/evandbrown/dm/googlecloud"
 	"github.com/evandbrown/dm/util"
 	"github.com/nu7hatch/gouuid"
 	"github.com/spf13/cobra"
@@ -30,7 +31,7 @@ func init() {
 func create(cmd *cobra.Command, args []string) error {
 	//TODO validate required params (i.e., project)
 	log.Debug("Creating deployment manager service")
-	service, err := util.GetService()
+	service, err := googlecloud.GetService()
 	if err != nil {
 		return err
 	}
@@ -49,7 +50,7 @@ func create(cmd *cobra.Command, args []string) error {
 	}
 	log.Printf("Creating new deployment %s", name)
 
-	d := util.NewDeployment(name, "", config)
+	d := googlecloud.NewDeployment(name, "", config)
 	d.Intent = "UPDATE"
 	call := service.Deployments.Insert(cmd.Flags().Lookup("project").Value.String(), d)
 	_, error := call.Do()
