@@ -1,13 +1,13 @@
 package util
 
 import (
-	"fmt"
-	"os"
+	log "github.com/Sirupsen/logrus"
 )
 
 func Check(err error) {
 	if err != nil {
-		fmt.Fprintln(os.Stdout, err)
-		os.Exit(1)
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("An error occurred")
 	}
 }
