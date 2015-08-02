@@ -1,10 +1,12 @@
 package commands
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/evandbrown/dm/conf"
 	"github.com/evandbrown/dm/googlecloud"
 	"github.com/evandbrown/dm/util"
 	"github.com/nu7hatch/gouuid"
@@ -13,10 +15,9 @@ import (
 
 var uid bool
 var config, name string
-
 var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Create a new deployment",
+	Use:   "deploy",
+	Short: "Deploy a configuration to Deployment Manager.",
 }
 
 func init() {
@@ -29,7 +30,11 @@ func init() {
 }
 
 func create(cmd *cobra.Command, args []string) error {
-	//TODO validate required params (i.e., project)
+	if Project == "" {
+		log.WithFields(log.Fields{
+			"missingParam": "--project",
+		}).Fatal("--project parameter is required to create a new deployment")
+	}
 	log.Debug("Creating deployment manager service")
 	service, err := googlecloud.GetService()
 	if err != nil {
@@ -52,9 +57,19 @@ func create(cmd *cobra.Command, args []string) error {
 
 	d := googlecloud.NewDeployment(name, "", config)
 	d.Intent = "UPDATE"
-	call := service.Deployments.Insert(cmd.Flags().Lookup("project").Value.String(), d)
+	call := service.Deployments.Insert(Project, d)
 	_, error := call.Do()
 	util.Check(error)
+	dConfig := conf.Deployment{
+		Id:      name,
+		Project: Project,
+	}
+
+	_, err = conf.AppendOrUpdateDeployment(dConfig, true)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("Config was deployed but there was an error writing the config file. You will not be able to use other `dm` commands, but the deployment will exist. Error was %s", err))
+	}
+
 	log.Printf("Deployment created. Run `dm status` for information on its progress")
 	return nil
 }
