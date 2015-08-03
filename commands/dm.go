@@ -32,6 +32,7 @@ func addCommands() {
 	DmCmd.AddCommand(deployCmd)
 	DmCmd.AddCommand(deleteCmd)
 	DmCmd.AddCommand(lsCmd)
+	DmCmd.AddCommand(statCmd)
 }
 
 func logging() {
@@ -46,14 +47,14 @@ func logging() {
 func checkConfig() {
 	config, err := conf.ReadDeploymentConfig()
 	if err != nil {
-		log.Fatal("No know deployments found. Use `dm deploy` to create a new one")
+		log.Fatal("No deployments found. Use `dm deploy` to create a new one")
 	}
 
 	// Deployment name was provided
 	if Name != "" {
 		// Name not found in config file
 		if _, ok := config.Deployments[Name]; !ok {
-			log.Fatal(fmt.Sprintf("Deployment name '%s' not found", Name))
+			log.Fatal(fmt.Sprintf("Deployment '%s' not found", Name))
 		}
 	} else {
 		// No deployment name was provided. Find default from config
@@ -67,4 +68,6 @@ func checkConfig() {
 			}
 		}
 	}
+
+	Project = config.Deployments[Name].Project
 }
