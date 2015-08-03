@@ -4,13 +4,14 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/naoina/toml"
+	//"github.com/naoina/toml"
+	"github.com/BurntSushi/toml"
 )
 
 var path = ".dm.toml"
 
 type DeploymentConfig struct {
-	Deployment []Deployment
+	Deployments map[string]Deployment
 }
 
 type Deployment struct {
@@ -22,7 +23,7 @@ type Deployment struct {
 	Branch   string
 }
 
-func ReadDeploymentConfig(path string) (DeploymentConfig, error) {
+func ReadDeploymentConfig() (DeploymentConfig, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return DeploymentConfig{}, err
@@ -33,7 +34,7 @@ func ReadDeploymentConfig(path string) (DeploymentConfig, error) {
 		return DeploymentConfig{}, err
 	}
 	var config DeploymentConfig
-	if err := toml.Unmarshal(buf, &config); err != nil {
+	if _, err := toml.Decode(string(buf), &config); err != nil {
 		return DeploymentConfig{}, err
 	}
 	return config, nil
@@ -44,22 +45,21 @@ func AppendOrUpdateDeployment(d Deployment, initIfMissing bool) (DeploymentConfi
 	if err != nil && initIfMissing {
 		f, err = os.Create(path)
 	}
-	defer f.Close()
+	f.Close()
 
-	config, err := ReadDeploymentConfig(path)
+	config, err := ReadDeploymentConfig()
 	if err != nil {
 		return DeploymentConfig{}, err
 	}
-	if config.Deployment == nil {
-		config.Deployment = make([]Deployment, 0)
+	if config.Deployments == nil {
+		config.Deployments = make(map[string]Deployment)
 	}
 
-	config.Deployment = append(config.Deployment, d)
-	buff, err := toml.Marshal(config)
-	if err != nil {
-		return DeploymentConfig{}, err
-	}
-	_, err = f.Write(buff)
+	config.Deployments[d.Id] = d
+
+	f, _ = os.Create(path)
+	encoder := toml.NewEncoder(f)
+	err = encoder.Encode(config)
 	if err != nil {
 		return DeploymentConfig{}, err
 	}

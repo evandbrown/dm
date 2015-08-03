@@ -14,22 +14,21 @@ import (
 )
 
 var uid bool
-var config, name string
-var createCmd = &cobra.Command{
+var config string
+var deployCmd = &cobra.Command{
 	Use:   "deploy",
 	Short: "Deploy a configuration to Deployment Manager.",
 }
 
 func init() {
-	createCmd.Flags().StringVarP(&config, "config", "c", "config.yaml", "The name of the config to deploy.")
-	createCmd.Flags().StringVarP(&name, "name", "n", "", "The name of the deployment. Defaults to the name of the currect directory")
-	createCmd.Flags().BoolVarP(&uid, "uid", "u", true, "Should a 7 char UID be appended to deployment name. Defaults is yes")
-	createCmd.Run = func(cmd *cobra.Command, args []string) {
-		util.Check(create(cmd, args))
+	deployCmd.Flags().StringVarP(&config, "config", "c", "config.yaml", "The name of the config to deploy.")
+	deployCmd.Flags().BoolVarP(&uid, "uid", "u", true, "Should a 7 char UID be appended to deployment name. Defaults is yes")
+	deployCmd.Run = func(cmd *cobra.Command, args []string) {
+		util.Check(deploy(cmd, args))
 	}
 }
 
-func create(cmd *cobra.Command, args []string) error {
+func deploy(cmd *cobra.Command, args []string) error {
 	if Project == "" {
 		log.WithFields(log.Fields{
 			"missingParam": "--project",
@@ -41,27 +40,27 @@ func create(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	if len(name) == 0 {
-		name, err = os.Getwd()
+	if len(Name) == 0 {
+		Name, err = os.Getwd()
 		util.Check(err)
-		dirs := strings.Split(name, "/")
-		name = dirs[len(dirs)-1]
+		dirs := strings.Split(Name, "/")
+		Name = dirs[len(dirs)-1]
 	}
 
 	if uid {
 		u, err := uuid.NewV4()
 		util.Check(err)
-		name += "-" + u.String()[:7]
+		Name += "-" + u.String()[:7]
 	}
-	log.Printf("Creating new deployment %s", name)
+	log.Printf("Creating new deployment %s", Name)
 
-	d := googlecloud.NewDeployment(name, "", config)
+	d := googlecloud.NewDeployment(Name, "", config)
 	d.Intent = "UPDATE"
 	call := service.Deployments.Insert(Project, d)
 	_, error := call.Do()
 	util.Check(error)
 	dConfig := conf.Deployment{
-		Id:      name,
+		Id:      Name,
 		Project: Project,
 	}
 
