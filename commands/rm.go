@@ -16,7 +16,7 @@ var deleteCmd = &cobra.Command{
 
 func init() {
 	deleteCmd.PreRun = func(cmd *cobra.Command, args []string) {
-		checkConfig()
+		requireName()
 	}
 
 	deleteCmd.Run = func(cmd *cobra.Command, args []string) {

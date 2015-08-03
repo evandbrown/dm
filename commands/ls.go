@@ -15,7 +15,7 @@ var lsCmd = &cobra.Command{
 
 func init() {
 	lsCmd.PreRun = func(cmd *cobra.Command, args []string) {
-		checkConfig()
+		requireConfig()
 	}
 	lsCmd.Run = func(cmd *cobra.Command, args []string) {
 		util.Check(ls(cmd, args))

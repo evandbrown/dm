@@ -15,7 +15,7 @@ var statCmd = &cobra.Command{
 
 func init() {
 	statCmd.PreRun = func(cmd *cobra.Command, args []string) {
-		checkConfig()
+		requireName()
 	}
 	statCmd.Run = func(cmd *cobra.Command, args []string) {
 		util.Check(stat(cmd, args))
