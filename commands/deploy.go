@@ -36,9 +36,7 @@ func deploy(cmd *cobra.Command, args []string) error {
 	}
 	log.Debug("Creating deployment manager service")
 	service, err := googlecloud.GetService()
-	if err != nil {
-		return err
-	}
+	util.Check(err)
 
 	if len(Name) == 0 {
 		Name, err = os.Getwd()
@@ -64,7 +62,7 @@ func deploy(cmd *cobra.Command, args []string) error {
 		Project: Project,
 	}
 
-	_, err = conf.AppendOrUpdateDeployment(dConfig, true)
+	_, err = conf.AppendDeployment(dConfig, true)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Config was deployed but there was an error writing the config file. You will not be able to use other `dm` commands, but the deployment will exist. Error was %s", err))
 	}

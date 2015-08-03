@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 
@@ -40,7 +41,7 @@ func ReadDeploymentConfig() (DeploymentConfig, error) {
 	return config, nil
 }
 
-func AppendOrUpdateDeployment(d Deployment, initIfMissing bool) (DeploymentConfig, error) {
+func AppendDeployment(d Deployment, initIfMissing bool) (DeploymentConfig, error) {
 	f, err := os.Open(path)
 	if err != nil && initIfMissing {
 		f, err = os.Create(path)
@@ -64,4 +65,29 @@ func AppendOrUpdateDeployment(d Deployment, initIfMissing bool) (DeploymentConfi
 		return DeploymentConfig{}, err
 	}
 	return config, nil
+}
+
+func RemoveDeployment(id string) error {
+	config, err := ReadDeploymentConfig()
+	if err != nil {
+		return err
+	}
+
+	if _, ok := config.Deployments[id]; ok == false {
+		return errors.New("Deployment not found")
+	}
+
+	delete(config.Deployments, id)
+	if len(config.Deployments) == 0 {
+		return os.Remove(path)
+	}
+
+	f, _ := os.Create(path)
+	encoder := toml.NewEncoder(f)
+	err = encoder.Encode(config)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
