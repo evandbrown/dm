@@ -1,6 +1,7 @@
 package commands
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/evandbrown/dm/conf"
 	"github.com/evandbrown/dm/googlecloud"
 	"github.com/evandbrown/dm/util"
@@ -29,14 +30,14 @@ func delete(cmd *cobra.Command, args []string) error {
 	config, err := conf.ReadDeploymentConfig()
 	util.Check(err)
 
-	for _, d := range config.Deployments {
-		call := service.Deployments.Delete(d.Project, d.Id)
-		_, error := call.Do()
-		util.Check(error)
+	d := config.Deployments[Name]
+	call := service.Deployments.Delete(d.Project, d.Id)
+	_, err = call.Do()
+	util.Check(err)
 
-		util.Check(conf.RemoveDeployment(Name))
-		return nil
-	}
+	err = conf.RemoveDeployment(Name)
+	util.Check(err)
 
+	log.Printf("Deleted deployment %s", Name)
 	return nil
 }

@@ -45,11 +45,22 @@ func checkConfig() {
 		log.Fatal("No know deployments found. Use `dm deploy` to create a new one")
 	}
 
-	if len(config.Deployments) > 1 && Name == "" {
-		log.Fatal("Multiple deployments found. Use the --name flag to specify the deployment to use with the command.")
-	}
-
-	if _, ok := config.Deployments[Name]; Name != "" && !ok {
-		log.Fatal(fmt.Sprintf("Deployment name '%s' not found", Name))
+	// Deployment name was provided
+	if Name != "" {
+		// Name not found in config file
+		if _, ok := config.Deployments[Name]; !ok {
+			log.Fatal(fmt.Sprintf("Deployment name '%s' not found", Name))
+		}
+	} else {
+		// No deployment name was provided. Find default from config
+		if len(config.Deployments) > 1 {
+			log.Fatal("Multiple deployments found. Use the --name flag to specify the deployment to use with the command.")
+		} else {
+			// Use the first and only deployment
+			for name, _ := range config.Deployments {
+				Name = name
+				break
+			}
+		}
 	}
 }
