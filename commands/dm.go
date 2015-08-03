@@ -31,11 +31,15 @@ func Execute() {
 func addCommands() {
 	DmCmd.AddCommand(deployCmd)
 	DmCmd.AddCommand(deleteCmd)
+	DmCmd.AddCommand(lsCmd)
 }
 
 func logging() {
+	log.SetFormatter(&log.TextFormatter{DisableColors: false, DisableTimestamp: true, DisableSorting: true})
 	if Verbose {
 		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
 	}
 }
 

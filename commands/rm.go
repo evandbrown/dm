@@ -1,7 +1,8 @@
 package commands
 
 import (
-	log "github.com/Sirupsen/logrus"
+	"fmt"
+
 	"github.com/evandbrown/dm/conf"
 	"github.com/evandbrown/dm/googlecloud"
 	"github.com/evandbrown/dm/util"
@@ -9,7 +10,7 @@ import (
 )
 
 var deleteCmd = &cobra.Command{
-	Use:   "delete",
+	Use:   "rm",
 	Short: "Delete a deployment",
 }
 
@@ -38,6 +39,6 @@ func delete(cmd *cobra.Command, args []string) error {
 	err = conf.RemoveDeployment(Name)
 	util.Check(err)
 
-	log.Printf("Deleted deployment %s", Name)
+	fmt.Printf("Deleted deployment %s\n", Name)
 	return nil
 }

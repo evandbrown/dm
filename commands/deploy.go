@@ -30,9 +30,7 @@ func init() {
 
 func deploy(cmd *cobra.Command, args []string) error {
 	if Project == "" {
-		log.WithFields(log.Fields{
-			"missingParam": "--project",
-		}).Fatal("--project parameter is required to create a new deployment")
+		log.Fatal("--project parameter is required to create a new deployment")
 	}
 	log.Debug("Creating deployment manager service")
 	service, err := googlecloud.GetService()
@@ -50,7 +48,7 @@ func deploy(cmd *cobra.Command, args []string) error {
 		util.Check(err)
 		Name += "-" + u.String()[:7]
 	}
-	log.Printf("Creating new deployment %s", Name)
+	log.Infof("Creating new deployment %s", Name)
 
 	d := googlecloud.NewDeployment(Name, "", config)
 	d.Intent = "UPDATE"
@@ -67,6 +65,6 @@ func deploy(cmd *cobra.Command, args []string) error {
 		log.Fatal(fmt.Sprintf("Config was deployed but there was an error writing the config file. You will not be able to use other `dm` commands, but the deployment will exist. Error was %s", err))
 	}
 
-	log.Printf("Deployment created. Run `dm status` for information on its progress")
+	fmt.Printf("Created deployment %s.\n", Name)
 	return nil
 }
