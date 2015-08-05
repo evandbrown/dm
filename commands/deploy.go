@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -11,6 +13,12 @@ import (
 	"github.com/evandbrown/dm/util"
 	"github.com/nu7hatch/gouuid"
 	"github.com/spf13/cobra"
+)
+
+const (
+	uidlen = 5
+	maxlen = 63
+	namere = "[a-z]([-a-z0-9]*[a-z0-9])?"
 )
 
 var uid bool
@@ -28,6 +36,41 @@ func init() {
 	}
 }
 
+func getName() (string, error) {
+	var err error
+	if len(Name) == 0 {
+		Name, err = os.Getwd()
+		if err != nil {
+			return "", err
+		}
+		dirs := strings.Split(Name, "/")
+		Name = dirs[len(dirs)-1]
+	}
+
+	// Replace underscores
+	Name = strings.Replace(Name, "_", "-", -1)
+	Name = strings.ToLower(Name)
+
+	// Reduce name prefix to keep total to < 63 chars
+	if uid && len(Name)+uidlen > maxlen {
+		Name = Name[:maxlen-uidlen]
+	}
+
+	// Append a uid
+	if uid {
+		u, err := uuid.NewV4()
+		util.Check(err)
+		Name += "-" + u.String()[:uidlen-1]
+	}
+
+	// Validate name
+	if match, err := regexp.MatchString(namere, Name); match == false || err != nil {
+		return "", errors.New(fmt.Sprintf("The provided or derived name for the deployment is invalid: %s. Must match regex %s", Name, namere))
+	}
+
+	return Name, nil
+}
+
 func deploy(cmd *cobra.Command, args []string) error {
 	if Project == "" {
 		log.Fatal("--project parameter is required to create a new deployment")
@@ -36,18 +79,12 @@ func deploy(cmd *cobra.Command, args []string) error {
 	service, err := googlecloud.GetService()
 	util.Check(err)
 
-	if len(Name) == 0 {
-		Name, err = os.Getwd()
-		util.Check(err)
-		dirs := strings.Split(Name, "/")
-		Name = dirs[len(dirs)-1]
+	Name, err = getName()
+	if err != nil {
+		log.Warning(err)
+		return err
 	}
 
-	if uid {
-		u, err := uuid.NewV4()
-		util.Check(err)
-		Name += "-" + u.String()[:7]
-	}
 	log.Infof("Creating new deployment %s", Name)
 
 	d := googlecloud.NewDeployment(Name, "", config)
