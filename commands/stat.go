@@ -2,6 +2,8 @@ package commands
 
 import (
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/evandbrown/dm/googlecloud"
 	"github.com/evandbrown/dm/util"
@@ -29,8 +31,13 @@ func stat(cmd *cobra.Command, args []string) error {
 	call := service.Resources.List(Project, Name)
 	resources, error := call.Do()
 	util.Check(error)
+
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
+	fmt.Fprintln(w, "Resource Type\tName\t")
 	for _, r := range resources.Resources {
-		fmt.Printf("%s\t%s\n", r.Type, r.Name)
+		fmt.Fprintf(w, "%s\t%s\t\n", r.Type, r.Name)
 	}
+	w.Flush()
 	return nil
 }
