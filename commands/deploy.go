@@ -45,7 +45,7 @@ func getName(setUid bool) (string, error) {
 			return "", err
 		}
 		dirs := strings.Split(name, "/")
-		Name = dirs[len(dirs)-1]
+		name = dirs[len(dirs)-1]
 	} else {
 		name = Name
 	}

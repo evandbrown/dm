@@ -13,6 +13,9 @@ func TestGetName(t *testing.T) {
 	if !strings.Contains(name, "-") {
 		t.Errorf("Name should contain a uuid: %s", name)
 	}
+	if strings.Contains(name, "/") {
+		t.Errorf("Name should not contain a /: %s", name)
+	}
 
 	uid = false
 	name, err = getName(false)
