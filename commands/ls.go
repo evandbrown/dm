@@ -31,15 +31,19 @@ func ls(cmd *cobra.Command, args []string) error {
 
 	// Get service
 	service, err := googlecloud.GetService()
-	util.Check(err)
+	if err != nil {
+		return err
+	}
 
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
 	fmt.Fprintln(w, "Deployment Name\tProject\tState\t")
 	for _, c := range config.Deployments {
 		call := service.Deployments.Get(c.Project, c.Id)
-		deployment, error := call.Do()
-		util.Check(error)
+		deployment, err := call.Do()
+		if err != nil {
+			return err
+		}
 		fmt.Fprintf(w, "%s\t%s\t%s\t\n", c.Id, c.Project, deployment.State)
 	}
 	w.Flush()
