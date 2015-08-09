@@ -36,39 +36,41 @@ func init() {
 	}
 }
 
-func getName() (string, error) {
+func getName(setUid bool) (string, error) {
+	var name string
 	var err error
 	if len(Name) == 0 {
-		Name, err = os.Getwd()
+		name, err = os.Getwd()
 		if err != nil {
 			return "", err
 		}
-		dirs := strings.Split(Name, "/")
+		dirs := strings.Split(name, "/")
 		Name = dirs[len(dirs)-1]
+	} else {
+		name = Name
 	}
 
 	// Replace underscores
-	Name = strings.Replace(Name, "_", "-", -1)
-	Name = strings.ToLower(Name)
+	name = strings.Replace(name, "_", "-", -1)
+	name = strings.ToLower(name)
 
 	// Reduce name prefix to keep total to < 63 chars
-	if uid && len(Name)+uidlen > maxlen {
-		Name = Name[:maxlen-uidlen]
+	if setUid && len(name)+uidlen > maxlen {
+		name = name[:maxlen-uidlen]
 	}
 
 	// Append a uid
-	if uid {
+	if setUid {
 		u, err := uuid.NewV4()
 		util.Check(err)
-		Name += "-" + u.String()[:uidlen-1]
+		name += "-" + u.String()[:uidlen-1]
 	}
 
 	// Validate name
-	if match, err := regexp.MatchString(namere, Name); match == false || err != nil {
-		return "", errors.New(fmt.Sprintf("The provided or derived name for the deployment is invalid: %s. Must match regex %s", Name, namere))
+	if match, err := regexp.MatchString(namere, name); match == false || err != nil {
+		return "", errors.New(fmt.Sprintf("The provided or derived name for the deployment is invalid: %s. Must match regex %s", name, namere))
 	}
-
-	return Name, nil
+	return name, nil
 }
 
 func deploy(cmd *cobra.Command, args []string) error {
@@ -79,7 +81,7 @@ func deploy(cmd *cobra.Command, args []string) error {
 	service, err := googlecloud.GetService()
 	util.Check(err)
 
-	Name, err = getName()
+	Name, err = getName(uid)
 	if err != nil {
 		log.Warning(err)
 		return err
