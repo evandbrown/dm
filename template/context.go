@@ -111,22 +111,26 @@ func (c *ContextBuilder) AddUserVars(vars map[string]string, constrain bool) {
 	for k, v := range vars {
 		if constrain {
 			c.AllowedUserVars[k] = v
-			c.UserVars[k] = v
+			c.AddUserVar(k, v)
 		} else {
-			if c.EnableEnv {
-				log.Debugf("--rendering env var \"%v\"\n", v)
-				rendered, err := Render(&Context{Data: v})
-				if err != nil {
-					c.Error = err
-				}
-				log.Debugf("--rendered: \"%v\"\n", rendered.String())
-				v = rendered.String()
-			}
-			log.Debugf("--adding user var %v with value %s\n", k, v)
-			c.UserVars[k] = v
+			c.AddUserVar(k, v)
 		}
 	}
 	log.Debugf("user vars now: %v\n", c.UserVars)
+}
+
+func (c *ContextBuilder) AddUserVar(k string, v string) {
+	if c.EnableEnv {
+		log.Debugf("--rendering env var \"%v\"\n", v)
+		rendered, err := Render(&Context{Data: v})
+		if err != nil {
+			c.Error = err
+		}
+		log.Debugf("--rendered: \"%v\"\n", rendered.String())
+		v = rendered.String()
+	}
+	log.Debugf("--adding user var %v with value %s\n", k, v)
+	c.UserVars[k] = v
 }
 
 func (c *ContextBuilder) Validate() error {

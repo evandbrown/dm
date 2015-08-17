@@ -29,10 +29,7 @@ func TestUserVarsConstrain(t *testing.T) {
 		"foo": "bar",
 	}
 	ctxb.AddUserVars(userVars, true)
-	// should not equal
-	if reflect.DeepEqual(ctxb.UserVars, userVars) {
-		t.Fatalf("\nexpected: %v\n\ngot: %#v", ctxb.UserVars, userVars)
-	}
+
 	ctxb.AddUserVars(userVars, false)
 	if !reflect.DeepEqual(ctxb.UserVars, userVars) {
 		t.Fatalf("\nexpected: %v\n\ngot: %#v", ctxb.UserVars, userVars)
