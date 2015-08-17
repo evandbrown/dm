@@ -1,0 +1,3 @@
+variables:
+  image: "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-8-jessie-v20150710"
+  api_server_count: "{{env `API_SERVER_COUNT`}}"

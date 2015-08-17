@@ -1,0 +1,36 @@
+--- 
+imports: 
+  - path: config.jinja
+
+resources: 
+  - 
+    name: internal
+    type: config.jinja
+    properties: 
+      image: "{{var `image`}}"
+      region: us-central1
+      backend_app_bin: "https://storage.googleapis.com/evandbrown17/gceme"
+      machine_type: 
+        consul: f1-micro
+        haproxy: n1-standard-1
+        api: n1-standard-1
+        www: n1-standard-1
+      zones: 
+        us-central1-a: 
+          desired_api_servers: 1
+          max_api_servers: 10
+          min_api_servers: 1
+          haproxy_servers: 1
+          www_servers: 1
+        us-central1-b: 
+          desired_api_servers: 1
+          max_api_servers: 10
+          min_api_servers: 1
+          haproxy_servers: 1
+          www_servers: 1
+        us-central1-f: 
+          desired_api_servers: 1
+          max_api_servers: 10
+          min_api_servers: 1
+          haproxy_servers: 1
+          www_servers: 1

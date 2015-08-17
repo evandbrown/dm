@@ -1,0 +1,63 @@
+# Copyright 2014 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+#you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+{% set API = "api-internal-" + env["deployment"] %}
+{% set HAPROXY = "haproxy-" + env["deployment"] %}
+{% set CONSUL = "consul-" + env["deployment"] %}
+{% set WWW = "www-" + env["deployment"] %}
+
+# Construct args for consul agent to join cluster
+{% set CONSUL_ARGS_LIST = [] %}
+{% set _ = CONSUL_ARGS_LIST.append("-retry-max 10") %}
+{% set _ = CONSUL_ARGS_LIST.append("-retry-interval 30s") %}
+{% for zone in properties["zones"] %}
+{% set _ = CONSUL_ARGS_LIST.append("-retry-join " + CONSUL + "-" + zone) %}
+{% endfor %}
+{% set CONSUL_ARGS_STRING = CONSUL_ARGS_LIST|join(' ') %}
+
+resources:
+- name: {{ CONSUL }}
+  type: consul.jinja
+  properties:
+    machine_type: {{ properties["machine_type"]["consul"] }}
+    image: {{ properties["image"] }}
+    consul_args: {{ CONSUL_ARGS_STRING }}
+    zones: {{ properties["zones"] }}
+
+- name: {{ HAPROXY }}
+  type: haproxy.jinja
+  properties:
+    machine_type: {{ properties["machine_type"]["haproxy"] }}
+    image: {{ properties["image"] }}
+    consul_args: {{ CONSUL_ARGS_STRING }}
+    zones: {{ properties["zones"] }}
+
+- name: {{ API }}
+  type: api-internal.jinja
+  properties:
+    machine_type: {{ properties["machine_type"]["api"] }}
+    image: {{ properties["image"] }}
+    consul_args: {{ CONSUL_ARGS_STRING }}
+    zones: {{ properties["zones"] }}
+    backend_app_bin: {{ properties["backend_app_bin"] }}
+
+- name: {{ WWW }}
+  type: www-frontend.jinja
+  properties:
+    machine_type: {{ properties["machine_type"]["www"] }}
+    image: {{ properties["image"] }}
+    consul_args: {{ CONSUL_ARGS_STRING }}
+    zones: {{ properties["zones"] }}
+    region: {{ properties["region"] }}
+    backend_app_bin: {{ properties["backend_app_bin"] }}
