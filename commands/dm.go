@@ -18,7 +18,7 @@ var DmCmd = &cobra.Command{
 }
 
 func init() {
-	DmCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
+	DmCmd.PersistentFlags().BoolVar(&Verbose, "debug", false, "debug/verbose output")
 	DmCmd.PersistentFlags().StringVarP(&Project, "project", "p", "", "Google Cloud Platform project name")
 	DmCmd.PersistentFlags().StringVarP(&Name, "name", "n", "", "Name of the deployment to use")
 }
@@ -30,6 +30,7 @@ func Execute() {
 
 func addCommands() {
 	DmCmd.AddCommand(deployCmd)
+	DmCmd.AddCommand(updateCmd)
 	DmCmd.AddCommand(deleteCmd)
 	DmCmd.AddCommand(lsCmd)
 	DmCmd.AddCommand(statCmd)

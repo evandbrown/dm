@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	//"github.com/naoina/toml"
 	"github.com/BurntSushi/toml"
 )
 
@@ -16,12 +15,15 @@ type DeploymentConfig struct {
 }
 
 type Deployment struct {
-	Id       string
-	Project  string
-	Commit   string
-	Deployed string
-	Updated  string
-	Branch   string
+	Id          string
+	Project     string
+	Config      string
+	Vars        string
+	Fingerprint string
+	Commit      string
+	Deployed    string
+	Updated     string
+	Branch      string
 }
 
 func ReadDeploymentConfig() (DeploymentConfig, error) {
