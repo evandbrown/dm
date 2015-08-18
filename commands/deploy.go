@@ -102,21 +102,20 @@ func deploy(cmd *cobra.Command, args []string) error {
 
 	// Create a var provider for vars.yaml
 	varfile, err := os.Open(varspath)
-	if err != nil {
-		return err
+	if err == nil {
+		vp := &template.VarsDotYAMLMapper{}
+		err = vp.Parse(varfile)
+		if err != nil {
+			return err
+		}
+
+		ctxb.AddConstraints(vp.Keys())
+		ctxb.AddUserVars(vp.Map())
+
+		// Add CLI avrs
+		ctxb.AddUserVars(vars.vars)
+
 	}
-	vp := &template.VarsDotYAMLMapper{}
-	err = vp.Parse(varfile)
-	if err != nil {
-		return err
-	}
-
-	ctxb.AddConstraints(vp.Keys())
-	ctxb.AddUserVars(vp.Map())
-
-	// Add CLI avrs
-	ctxb.AddUserVars(vars.vars)
-
 	// Validate and render
 	err = ctxb.Validate()
 	if err != nil {
