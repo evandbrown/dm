@@ -17,7 +17,7 @@ func TestUserVars(t *testing.T) {
 	userVars := map[string]string{
 		"foo": "bar",
 	}
-	ctxb.AddUserVars(userVars, false)
+	ctxb.AddUserVars(userVars)
 	if !reflect.DeepEqual(ctxb.UserVars, userVars) {
 		t.Fatalf("\nexpected: %v\n\ngot: %#v", ctxb.UserVars, userVars)
 	}
@@ -28,9 +28,10 @@ func TestUserVarsConstrain(t *testing.T) {
 	userVars := map[string]string{
 		"foo": "bar",
 	}
-	ctxb.AddUserVars(userVars, true)
+	constraints := []string{"foo"}
+	ctxb.AddConstraints(constraints)
 
-	ctxb.AddUserVars(userVars, false)
+	ctxb.AddUserVars(userVars)
 	if !reflect.DeepEqual(ctxb.UserVars, userVars) {
 		t.Fatalf("\nexpected: %v\n\ngot: %#v", ctxb.UserVars, userVars)
 	}
@@ -45,7 +46,7 @@ func TestUserVarsFromEnv(t *testing.T) {
 	expected := map[string]string{
 		"foo": "bar",
 	}
-	ctxb.AddUserVars(userVars, false)
+	ctxb.AddUserVars(userVars)
 	// should not equal
 	if reflect.DeepEqual(ctxb.UserVars, userVars) {
 		t.Fatalf("\nexpected: %v\n\ngot: %#v", ctxb.UserVars, userVars)

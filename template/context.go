@@ -38,7 +38,7 @@ type ContextBuilder struct {
 	// Variables is the mapping of user variables that the
 	// "user" function reads from.
 	UserVars        map[string]string
-	AllowedUserVars map[string]string
+	AllowedUserVars map[string]struct{}
 	EnableEnv       bool
 	Path            string
 
@@ -48,7 +48,7 @@ type ContextBuilder struct {
 func NewContextBuilder() *ContextBuilder {
 	c := &ContextBuilder{
 		UserVars:        make(map[string]string),
-		AllowedUserVars: make(map[string]string),
+		AllowedUserVars: make(map[string]struct{}),
 		EnableEnv:       true,
 	}
 
@@ -92,29 +92,16 @@ func (c *ContextBuilder) context() (*Context, error) {
 	}, nil
 }
 
-func (c *ContextBuilder) AddUserVarsFromProvider(vp *VarProvider) {
-	if c.Error != nil {
-		return
+func (c *ContextBuilder) AddConstraints(constraints []string) {
+	for _, v := range constraints {
+		c.AllowedUserVars[v] = struct{}{}
 	}
-
-	vars, err := vp.Mapper.Map(vp.Source)
-	if err != nil {
-		c.Error = err
-		return
-	}
-	log.Debugf("adding user vars from provider:\n\n%v\n", vars)
-	c.AddUserVars(vars, vp.Constrain)
 }
 
-func (c *ContextBuilder) AddUserVars(vars map[string]string, constrain bool) {
-	log.Debugf("adding user vars. contrained=%v", constrain)
+func (c *ContextBuilder) AddUserVars(vars map[string]string) {
+	log.Debugf("adding user vars", vars)
 	for k, v := range vars {
-		if constrain {
-			c.AllowedUserVars[k] = v
-			c.AddUserVar(k, v)
-		} else {
-			c.AddUserVar(k, v)
-		}
+		c.AddUserVar(k, v)
 	}
 	log.Debugf("user vars now: %v\n", c.UserVars)
 }

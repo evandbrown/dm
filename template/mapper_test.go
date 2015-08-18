@@ -29,11 +29,13 @@ func TestVarsDotYAMLMapper(t *testing.T) {
 
 	for _, c := range cases {
 		vm := VarsDotYAMLMapper{}
-		actual, err := vm.Map(strings.NewReader(c.Input))
+		err := vm.Parse(strings.NewReader(c.Input))
+
 		if err == nil && c.ExpectError {
 			t.Errorf("expected error parsing %v\n\n%s", c.Input, err)
 		}
 
+		actual := vm.Map()
 		if !reflect.DeepEqual(actual, c.Result) {
 			t.Fatalf("\nexpected: %v\n\ngot: %#v", actual, c.Result)
 		}

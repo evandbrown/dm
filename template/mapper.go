@@ -10,27 +10,42 @@ import (
 // Implement the VarMapper interface to convert
 // variable for a template into a map
 type VarMapper interface {
-	Map(r io.Reader) (map[string]string, error)
+	Parse(r io.Reader)
+	Map() (map[string]string, error)
+	Keys() map[string]struct{}
 }
 
-type VarProvider struct {
-	Mapper    VarMapper
-	Source    io.Reader
-	Constrain bool
+type VarsDotYAMLMapper struct {
+	data map[string]string
+	keys []string
 }
 
-type VarsDotYAMLMapper struct{}
-
-func (v VarsDotYAMLMapper) Map(r io.Reader) (map[string]string, error) {
+func (v *VarsDotYAMLMapper) Parse(r io.Reader) error {
 	contents, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	vars := &Variables{}
 	err = yaml.Unmarshal(contents, vars)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return vars.Variables, nil
+	v.data = vars.Variables
+
+	v.keys = make([]string, len(v.data), len(v.data))
+	i := 0
+	for k, _ := range v.data {
+		v.keys[i] = k
+		i++
+	}
+	return nil
+}
+
+func (v *VarsDotYAMLMapper) Map() map[string]string {
+	return v.data
+}
+
+func (v *VarsDotYAMLMapper) Keys() []string {
+	return v.keys
 }
