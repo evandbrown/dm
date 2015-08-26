@@ -3,7 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -71,13 +70,11 @@ func (v *configVar) Type() string {
 }
 
 func deploy(cmd *cobra.Command, args []string) error {
-	log.Info(vars)
 	//TODO this should be a validation method
 	if Project == "" {
 		log.Fatal("--project parameter is required to create a new deployment")
 	}
 
-	log.Debug("Creating deployment manager service")
 	service, err := googlecloud.GetService()
 	util.Check(err)
 
@@ -88,55 +85,20 @@ func deploy(cmd *cobra.Command, args []string) error {
 	}
 
 	log.Infof("Creating new deployment %s", Name)
-
-	// Create a context builder
-	ctxb := template.NewContextBuilder()
-
-	// Add base template
-	base, err := ioutil.ReadFile(configpath)
-	if err != nil {
-		return err
+	depBuilder := &template.DeploymentBuilder{
+		DeploymentName:  Name,
+		DeploymentDesc:  "",
+		ConfigFilePath:  configpath,
+		VarsDotYamlPath: varspath,
+		CLIVars:         vars.vars,
 	}
-	ctxb.Data = string(base)
-	ctxb.Path = configpath
 
-	// Create a var provider for vars.yaml
-	varfile, err := os.Open(varspath)
-	if err == nil {
-		vp := &template.VarsDotYAMLMapper{}
-		err = vp.Parse(varfile)
-		if err != nil {
-			return err
-		}
-
-		ctxb.AddConstraints(vp.Keys())
-		ctxb.AddUserVars(vp.Map())
-
-		// Add CLI avrs
-		ctxb.AddUserVars(vars.vars)
-
-	}
-	// Validate and render
-	err = ctxb.Validate()
+	d, err := depBuilder.GetDeployment()
 	if err != nil {
+		log.Warning(err)
 		return err
 	}
 
-	// Check for errors
-	if ctxb.Error != nil {
-		return ctxb.Error
-	}
-
-	// Create a deployment object for the DM API
-	config, err := ctxb.RenderConfig()
-	if err != nil {
-		return err
-	}
-
-	d, err := template.GenerateDeployment(Name, "", config)
-	if err != nil {
-		return err
-	}
 	d.Intent = "UPDATE"
 	call := service.Deployments.Insert(Project, d)
 	_, error := call.Do()
