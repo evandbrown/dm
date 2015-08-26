@@ -17,6 +17,7 @@ var updateCmd = &cobra.Command{
 }
 
 func init() {
+	updateCmd.Flags().VarP(&vars, "var", "v", "A variable value to provide to the vars.yaml file for use in a deployment. Define multiple with -v var1=foo -v var2=2")
 	updateCmd.PreRun = func(cmd *cobra.Command, args []string) {
 		requireName()
 	}
@@ -27,30 +28,38 @@ func init() {
 
 func update(cmd *cobra.Command, args []string) error {
 	// Get config from disk
-	config, err := conf.ReadDeploymentConfig()
+	dmconf, err := conf.ReadDeploymentConfig()
 	if err != nil {
 		return err
 	}
-	c := config.Deployments[Name]
+	c := dmconf.Deployments[Name]
 
-	deployment, err := googlecloud.GetDeployment(c.Project, c.Id)
+	depBuilder := &template.DeploymentBuilder{
+		DeploymentName:  Name,
+		DeploymentDesc:  "",
+		ConfigFilePath:  c.Config,
+		VarsDotYamlPath: c.Vars,
+		CLIVars:         vars.vars,
+	}
+
+	d, err := depBuilder.GetDeployment()
 	if err != nil {
+		log.Warning(err)
 		return err
 	}
 
-	log.Infof("Updating deployment %s", Name)
-
-	d, err := template.GenerateDeployment(Name, "", &template.Config{})
-	if err != nil {
-		return err
-	}
 	d.Intent = "UPDATE"
-	d.Fingerprint = deployment.Fingerprint
+	existing, err := googlecloud.GetDeployment(c.Project, c.Id)
+	if err != nil {
+		return err
+	}
+	d.Fingerprint = existing.Fingerprint
 
 	service, err := googlecloud.GetService()
 	if err != nil {
 		return err
 	}
+	log.Infof("Updating deployment %s", Name)
 	_, err = service.Deployments.Update(Project, Name, d).Do()
 	if err != nil {
 		return err
