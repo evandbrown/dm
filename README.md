@@ -9,7 +9,62 @@ Multiple deployments are supported. Each deployment has an entry in the `.dm.tom
 * `dm stat` describes the deployment defined in `.dm`.
 
 ## Local parameters
-Future support for using local paramters in a configuration.
+You can provide parameters when a deployment is created or update. The convention is to define them in `vars.yaml` in a dict named `variables`, like:
+
+
+```yaml
+variables:
+  image: "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-8-jessie-v20150710"
+  num_servers: "2"
+```
+
+This creates two vars - `image` and `num_servers`, each with default values. They can be used in the Deployment Manager config.yaml using the {{ var \`var_name\` }} syntax. This is modled after [Packer's](https://packer.io) support for variables:
+
+```yaml
+---
+imports:
+  - path: config.jinja
+resources:
+  -
+    name: loader
+    type: config.jinja
+    properties:
+      image: "{{var `image`}}"
+      num_servers: "{{ var `num_servers`}}"
+      datestamp: "1728992022"
+      test_duration: 60m
+```
+
+Variables (including those with default values defined in `vars.yaml`) can be specified or overridden at deploy time:
+
+```bash
+dm deploy              \
+  --var image=debian-8 \
+  --var num_servers=2
+```
+
+Variables can also receive a default value from the environment. In `vars.yaml` use the {{env `ENV_VAR_NAME`}} function:
+
+```yaml
+variables:
+  image: "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-8-jessie-v20150710"
+  num_servers: "{{env `NUM_SERVERS`}}"
+```
+
+Variables defined in `vars.yaml` must have a value at deploy time. The following is invalid:
+
+`vars.yaml`:
+
+```yaml
+variables:
+  image: "https://www.googleapis.com/compute/v1/projects/debian-cloud/global/images/debian-8-jessie-v20150710"
+  num_servers: ""
+```
+
+```shell
+dm deploy -p evandbrown17
+FATA[0000] An error occurred                             error=variable num_servers is empty
+```
 
 ## Git integration
 Future support for a git-based workflow that associates tags and branches with deployments.
