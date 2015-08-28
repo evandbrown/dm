@@ -99,7 +99,7 @@ func deploy(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	d.Intent = "UPDATE"
+	//	d.Intent = "UPDATE"
 	call := service.Deployments.Insert(Project, d)
 	_, error := call.Do()
 	util.Check(error)

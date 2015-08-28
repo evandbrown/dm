@@ -48,7 +48,7 @@ func update(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	d.Intent = "UPDATE"
+	//d.Intent = "UPDATE"
 	existing, err := googlecloud.GetDeployment(c.Project, c.Id)
 	if err != nil {
 		return err

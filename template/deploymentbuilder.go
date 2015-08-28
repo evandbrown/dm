@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/google/google-api-go-client/deploymentmanager/v2beta2"
+	"github.com/google/google-api-go-client/deploymentmanager/v2"
 )
 
 type DeploymentBuilder struct {
@@ -71,7 +71,7 @@ func (t *DeploymentBuilder) GetDeployment() (*deploymentmanager.Deployment, erro
 	if err != nil {
 		return d, err
 	}
-	tc := &deploymentmanager.TargetConfiguration{Config: string(config.Raw), Imports: dmConfig.ImportFiles}
+	tc := &deploymentmanager.TargetConfiguration{Config: &deploymentmanager.ConfigFile{Content: string(config.Raw)}, Imports: dmConfig.ImportFiles}
 
 	d.Target = tc
 

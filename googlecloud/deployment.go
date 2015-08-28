@@ -3,7 +3,7 @@ package googlecloud
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/evandbrown/dm/util"
-	"github.com/google/google-api-go-client/deploymentmanager/v2beta2"
+	"github.com/google/google-api-go-client/deploymentmanager/v2"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )

@@ -33,11 +33,12 @@ func ls(cmd *cobra.Command, args []string) error {
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)
 	fmt.Fprintln(w, "Deployment Name\tProject\tState\t")
 	for _, c := range config.Deployments {
-		deployment, err := googlecloud.GetDeployment(c.Project, c.Id)
+		_, err := googlecloud.GetDeployment(c.Project, c.Id)
 		if err != nil {
 			return err
 		}
-		fmt.Fprintf(w, "%s\t%s\t%s\t\n", c.Id, c.Project, deployment.State)
+		//TODO: show deployment status
+		fmt.Fprintf(w, "%s\t%s\t%s\t\n", c.Id, c.Project, "")
 	}
 	w.Flush()
 	return nil
