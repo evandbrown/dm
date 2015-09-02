@@ -2,7 +2,6 @@ package googlecloud
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/evandbrown/dm/util"
 	"github.com/google/google-api-go-client/deploymentmanager/v2"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -10,10 +9,10 @@ import (
 
 func GetService() (*deploymentmanager.Service, error) {
 	client, err := google.DefaultClient(oauth2.NoContext, "https://www.googleapis.com/auth/cloud-platform")
-	service, err := deploymentmanager.New(client)
-	util.Check(err)
-
-	return service, nil
+	if err != nil {
+		return &deploymentmanager.Service{}, err
+	}
+	return deploymentmanager.New(client)
 }
 
 func GetDeployment(project string, name string) (*deploymentmanager.Deployment, error) {
