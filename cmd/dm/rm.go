@@ -1,11 +1,9 @@
-package commands
+package main
 
 import (
 	"fmt"
 
-	"github.com/evandbrown/dm/conf"
 	"github.com/evandbrown/dm/googlecloud"
-	"github.com/evandbrown/dm/util"
 	"github.com/spf13/cobra"
 )
 
@@ -20,24 +18,24 @@ func init() {
 	}
 
 	deleteCmd.Run = func(cmd *cobra.Command, args []string) {
-		util.Check(delete(cmd, args))
+		Check(rm(cmd, args))
 	}
 }
 
-func delete(cmd *cobra.Command, args []string) error {
+func rm(cmd *cobra.Command, args []string) error {
 	service, err := googlecloud.GetService()
-	util.Check(err)
+	Check(err)
 
-	config, err := conf.ReadDeploymentConfig()
-	util.Check(err)
+	config, err := ReadDeploymentConfig()
+	Check(err)
 
 	d := config.Deployments[Name]
 	call := service.Deployments.Delete(d.Project, d.Id)
 	_, err = call.Do()
-	util.Check(err)
+	Check(err)
 
-	err = conf.RemoveDeployment(Name)
-	util.Check(err)
+	err = RemoveDeployment(Name)
+	Check(err)
 
 	fmt.Printf("Deleted deployment %s\n", Name)
 	return nil

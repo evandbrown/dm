@@ -1,10 +1,9 @@
-package commands
+package main
 
 import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/evandbrown/dm/conf"
 	"github.com/spf13/cobra"
 )
 
@@ -46,8 +45,8 @@ func logging() {
 	}
 }
 
-func requireConfig() conf.DeploymentConfig {
-	config, err := conf.ReadDeploymentConfig()
+func requireConfig() DeploymentConfig {
+	config, err := ReadDeploymentConfig()
 	if err != nil {
 		log.Fatal("No deployments found. Use `dm deploy` to create a new one")
 	}

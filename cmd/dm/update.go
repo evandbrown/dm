@@ -1,13 +1,10 @@
-package commands
+package main
 
 import (
 	"fmt"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/evandbrown/dm/conf"
 	"github.com/evandbrown/dm/googlecloud"
-	"github.com/evandbrown/dm/template"
-	"github.com/evandbrown/dm/util"
 	"github.com/spf13/cobra"
 )
 
@@ -22,19 +19,19 @@ func init() {
 		requireName()
 	}
 	updateCmd.Run = func(cmd *cobra.Command, args []string) {
-		util.Check(update(cmd, args))
+		Check(update(cmd, args))
 	}
 }
 
 func update(cmd *cobra.Command, args []string) error {
 	// Get config from disk
-	dmconf, err := conf.ReadDeploymentConfig()
+	dmconf, err := ReadDeploymentConfig()
 	if err != nil {
 		return err
 	}
 	c := dmconf.Deployments[Name]
 
-	depBuilder := &template.DeploymentBuilder{
+	depBuilder := &DeploymentBuilder{
 		DeploymentName:  Name,
 		DeploymentDesc:  "",
 		ConfigFilePath:  c.Config,

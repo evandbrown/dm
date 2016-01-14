@@ -1,4 +1,4 @@
-package commands
+package main
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/evandbrown/dm/googlecloud"
-	"github.com/evandbrown/dm/util"
 	"github.com/spf13/cobra"
 )
 
@@ -20,17 +19,17 @@ func init() {
 		requireName()
 	}
 	statCmd.Run = func(cmd *cobra.Command, args []string) {
-		util.Check(stat(cmd, args))
+		Check(stat(cmd, args))
 	}
 }
 
 func stat(cmd *cobra.Command, args []string) error {
 	service, err := googlecloud.GetService()
-	util.Check(err)
+	Check(err)
 
 	call := service.Resources.List(Project, Name)
 	resources, error := call.Do()
-	util.Check(error)
+	Check(error)
 
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)

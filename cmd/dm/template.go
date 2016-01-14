@@ -1,4 +1,4 @@
-package template
+package main
 
 type Variables struct {
 	Variables map[string]string

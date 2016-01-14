@@ -1,9 +1,8 @@
-package commands
+package main
 
 import (
 	"strings"
 
-	//log "github.com/Sirupsen/logrus"
 	"github.com/google/google-api-go-client/deploymentmanager/v2"
 )
 

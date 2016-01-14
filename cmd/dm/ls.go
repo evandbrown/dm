@@ -1,13 +1,11 @@
-package commands
+package main
 
 import (
 	"fmt"
 	"os"
 	"text/tabwriter"
 
-	"github.com/evandbrown/dm/conf"
 	"github.com/evandbrown/dm/googlecloud"
-	"github.com/evandbrown/dm/util"
 	"github.com/spf13/cobra"
 )
 
@@ -21,13 +19,13 @@ func init() {
 		requireConfig()
 	}
 	lsCmd.Run = func(cmd *cobra.Command, args []string) {
-		util.Check(ls(cmd, args))
+		Check(ls(cmd, args))
 	}
 }
 
 func ls(cmd *cobra.Command, args []string) error {
 	// Get config from disk
-	config, _ := conf.ReadDeploymentConfig()
+	config, _ := ReadDeploymentConfig()
 
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 0, 8, 2, '\t', 0)

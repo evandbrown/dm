@@ -1,4 +1,4 @@
-package commands
+package main
 
 import (
 	"errors"
@@ -8,10 +8,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/evandbrown/dm/conf"
 	"github.com/evandbrown/dm/googlecloud"
-	"github.com/evandbrown/dm/template"
-	"github.com/evandbrown/dm/util"
 	"github.com/nu7hatch/gouuid"
 	"github.com/spf13/cobra"
 )
@@ -38,7 +35,7 @@ func init() {
 	deployCmd.Flags().StringVarP(&varspath, "vars-file", "x", varspathDefault, "The name of the config to deploy.")
 	deployCmd.Flags().BoolVarP(&uid, "uid", "u", true, "Should a 7 char UID be appended to deployment name. Defaults is yes")
 	deployCmd.Run = func(cmd *cobra.Command, args []string) {
-		util.Check(deploy(cmd, args))
+		Check(deploy(cmd, args))
 	}
 }
 
@@ -76,7 +73,7 @@ func deploy(cmd *cobra.Command, args []string) error {
 	}
 
 	service, err := googlecloud.GetService()
-	util.Check(err)
+	Check(err)
 
 	Name, err = getName(uid)
 	if err != nil {
@@ -85,7 +82,7 @@ func deploy(cmd *cobra.Command, args []string) error {
 	}
 
 	log.Infof("Creating new deployment %s", Name)
-	depBuilder := &template.DeploymentBuilder{
+	depBuilder := &DeploymentBuilder{
 		DeploymentName:  Name,
 		DeploymentDesc:  "",
 		ConfigFilePath:  configpath,
@@ -102,17 +99,17 @@ func deploy(cmd *cobra.Command, args []string) error {
 	//	d.Intent = "UPDATE"
 	call := service.Deployments.Insert(Project, d)
 	_, error := call.Do()
-	util.Check(error)
+	Check(error)
 
 	//TODO only set Vars if the varspath file actually exists
-	dConfig := conf.Deployment{
+	dConfig := Deployment{
 		Id:      Name,
 		Project: Project,
 		Config:  configpath,
 		Vars:    varspath,
 	}
 
-	_, err = conf.AppendDeployment(dConfig, true)
+	_, err = AppendDeployment(dConfig, true)
 	if err != nil {
 		log.Fatal(fmt.Sprintf("Config was deployed but there was an error writing the config file. You will not be able to use other `dm` commands, but the deployment will exist. Error was %s", err))
 	}
@@ -147,7 +144,7 @@ func getName(setUid bool) (string, error) {
 	// Append a uid
 	if setUid {
 		u, err := uuid.NewV4()
-		util.Check(err)
+		Check(err)
 		name += "-" + u.String()[:uidlen-1]
 	}
 
